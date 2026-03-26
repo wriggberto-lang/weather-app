@@ -237,7 +237,7 @@
             loadingMsg.style.display = 'block';
 
             try {
-                const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${cityInput}&count=1&language=pt`);
+                const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityInput)}&count=1&language=pt`);
                 const geoData = await geoResponse.json();
 
                 if (!geoData.results || geoData.results.length === 0) {
@@ -255,7 +255,7 @@
                 const current = weatherData.current;
                 const climaAtual = traduzirClima(current.weather_code);
 
-                document.getElementById('city').innerText = `${cityName}, ${country}`;
+                document.getElementById('city').innerText = `${cityName}, ${country.toUpperCase()}`;
                 document.getElementById('temp').innerText = `${Math.round(current.temperature_2m)}°C`;
                 document.getElementById('desc').innerText = climaAtual.desc;
                 document.getElementById('humidity').innerText = `${current.relative_humidity_2m}%`;
