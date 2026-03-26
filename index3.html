@@ -76,7 +76,7 @@
         }
 
         .weather-info {
-            display: none; /* Escondido até buscar a cidade */
+            display: none;
             animation: fadeIn 0.5s ease-in-out;
         }
 
@@ -194,14 +194,12 @@
     </div>
 
     <script>
-        // Permite buscar apertando a tecla "Enter"
         document.getElementById("city-input").addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 buscarClima();
             }
         });
 
-        // Dicionário para traduzir os códigos de clima da API para Português e Ícones
         function traduzirClima(codigo) {
             const climas = {
                 0: { desc: 'Céu Limpo', icon: 'fa-sun' },
@@ -234,13 +232,11 @@
 
             if (cityInput.trim() === '') return;
 
-            // Reseta a tela
             weatherInfo.classList.remove('active');
             errorMsg.style.display = 'none';
             loadingMsg.style.display = 'block';
 
             try {
-                // Passo 1: Buscar as coordenadas (Latitude e Longitude) da cidade
                 const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${cityInput}&count=1&language=pt`);
                 const geoData = await geoResponse.json();
 
@@ -253,25 +249,21 @@
                 const cityName = geoData.results[0].name;
                 const country = geoData.results[0].country_code;
 
-                // Passo 2: Buscar o clima usando as coordenadas
                 const weatherResponse = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=auto`);
                 const weatherData = await weatherResponse.json();
 
                 const current = weatherData.current;
                 const climaAtual = traduzirClima(current.weather_code);
 
-                // Passo 3: Atualizar a tela com os dados
                 document.getElementById('city').innerText = `${cityName}, ${country}`;
                 document.getElementById('temp').innerText = `${Math.round(current.temperature_2m)}°C`;
                 document.getElementById('desc').innerText = climaAtual.desc;
                 document.getElementById('humidity').innerText = `${current.relative_humidity_2m}%`;
                 document.getElementById('wind').innerText = `${Math.round(current.wind_speed_10m)} km/h`;
 
-                // Atualizar o ícone
                 const iconElement = document.getElementById('weather-icon');
                 iconElement.className = `fas ${climaAtual.icon}`;
 
-                // Mostrar o resultado
                 loadingMsg.style.display = 'none';
                 weatherInfo.classList.add('active');
 
