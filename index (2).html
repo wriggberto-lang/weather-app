@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App de Clima | Portfólio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+        }
+
+        .weather-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+
+        .search-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            padding: 5px 10px;
+            margin-bottom: 30px;
+        }
+
+        .search-box input {
+            border: none;
+            outline: none;
+            background: transparent;
+            color: #fff;
+            padding: 10px;
+            font-size: 16px;
+            width: 80%;
+        }
+
+        .search-box input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .search-box button {
+            background: #fff;
+            color: #1e3c72;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .search-box button:hover {
+            background: #ff3366;
+            color: #fff;
+        }
+
+        .weather-info {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .weather-info.active {
+            display: block;
+        }
+
+        .city-name {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .temperature {
+            font-size: 64px;
+            font-weight: 600;
+            margin: 10px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .description {
+            font-size: 20px;
+            text-transform: capitalize;
+            margin-bottom: 30px;
+        }
+
+        .details {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .col {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .col i {
+            font-size: 24px;
+        }
+
+        .col div {
+            text-align: left;
+        }
+
+        .col p {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .col h3 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .error-msg, .loading-msg {
+            display: none;
+            color: #ff4d4d;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+
+        .loading-msg {
+            color: #fff;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="weather-card">
+        <div class="search-box">
+            <input type="text" id="city-input" placeholder="Digite o nome da cidade...">
+            <button onclick="buscarClima()"><i class="fas fa-search"></i></button>
+        </div>
+
+        <div id="loading" class="loading-msg">Buscando informações...</div>
+        <div id="error" class="error-msg">Cidade não encontrada. Tente novamente.</div>
+
+        <div class="weather-info" id="weather-info">
+            <h2 class="city-name" id="city">São Paulo, BR</h2>
+            <div class="temperature">
+                <i id="weather-icon" class="fas fa-sun"></i>
+                <span id="temp">25°C</span>
+            </div>
+            <p class="description" id="desc">Céu Limpo</p>
+
+            <div class="details">
+                <div class="col">
+                    <i class="fas fa-water"></i>
+                    <div>
+                        <h3 id="humidity">60%</h3>
+                        <p>Umidade</p>
+                    </div>
+                </div>
+                <div class="col">
+                    <i class="fas fa-wind"></i>
+                    <div>
+                        <h3 id="wind">15 km/h</h3>
+                        <p>Vento</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("city-input").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                buscarClima();
+            }
+        });
+
+        function traduzirClima(codigo) {
+            const climas = {
+                0: { desc: 'Céu Limpo', icon: 'fa-sun' },
+                1: { desc: 'Principalmente Limpo', icon: 'fa-sun' },
+                2: { desc: 'Parcialmente Nublado', icon: 'fa-cloud-sun' },
+                3: { desc: 'Nublado', icon: 'fa-cloud' },
+                45: { desc: 'Nevoeiro', icon: 'fa-smog' },
+                48: { desc: 'Nevoeiro com Geada', icon: 'fa-smog' },
+                51: { desc: 'Chuvisco Leve', icon: 'fa-cloud-rain' },
+                53: { desc: 'Chuvisco Moderado', icon: 'fa-cloud-rain' },
+                55: { desc: 'Chuvisco Forte', icon: 'fa-cloud-rain' },
+                61: { desc: 'Chuva Leve', icon: 'fa-cloud-showers-heavy' },
+                63: { desc: 'Chuva Moderada', icon: 'fa-cloud-showers-heavy' },
+                65: { desc: 'Chuva Forte', icon: 'fa-cloud-showers-heavy' },
+                71: { desc: 'Neve Leve', icon: 'fa-snowflake' },
+                73: { desc: 'Neve Moderada', icon: 'fa-snowflake' },
+                75: { desc: 'Neve Forte', icon: 'fa-snowflake' },
+                95: { desc: 'Tempestade', icon: 'fa-bolt' },
+                96: { desc: 'Tempestade com Granizo', icon: 'fa-bolt' },
+                99: { desc: 'Tempestade Forte', icon: 'fa-bolt' },
+            };
+            return climas[codigo] || { desc: 'Desconhecido', icon: 'fa-cloud' };
+        }
+
+        async function buscarClima() {
+            const cityInput = document.getElementById('city-input').value;
+            const weatherInfo = document.getElementById('weather-info');
+            const errorMsg = document.getElementById('error');
+            const loadingMsg = document.getElementById('loading');
+
+            if (cityInput.trim() === '') return;
+
+            weatherInfo.classList.remove('active');
+            errorMsg.style.display = 'none';
+            loadingMsg.style.display = 'block';
+
+            try {
+                const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityInput)}&count=1&language=pt`);
+                const geoData = await geoResponse.json();
+
+                if (!geoData.results || geoData.results.length === 0) {
+                    throw new Error('Cidade não encontrada');
+                }
+
+                const lat = geoData.results[0].latitude;
+                const lon = geoData.results[0].longitude;
+                const cityName = geoData.results[0].name;
+                const country = geoData.results[0].country_code;
+
+                const weatherResponse = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=auto`);
+                const weatherData = await weatherResponse.json();
+
+                const current = weatherData.current;
+                const climaAtual = traduzirClima(current.weather_code);
+
+                document.getElementById('city').innerText = `${cityName}, ${country.toUpperCase()}`;
+                document.getElementById('temp').innerText = `${Math.round(current.temperature_2m)}°C`;
+                document.getElementById('desc').innerText = climaAtual.desc;
+                document.getElementById('humidity').innerText = `${current.relative_humidity_2m}%`;
+                document.getElementById('wind').innerText = `${Math.round(current.wind_speed_10m)} km/h`;
+
+                const iconElement = document.getElementById('weather-icon');
+                iconElement.className = `fas ${climaAtual.icon}`;
+
+                loadingMsg.style.display = 'none';
+                weatherInfo.classList.add('active');
+
+            } catch (error) {
+                loadingMsg.style.display = 'none';
+                errorMsg.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
